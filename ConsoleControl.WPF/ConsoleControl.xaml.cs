@@ -100,44 +100,47 @@ namespace ConsoleControl.WPF
         /// <param name="e">The <see cref="System.Windows.Input.KeyEventArgs" /> instance containing the event data.</param>
         void richTextBoxConsole_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            bool inReadOnlyZone = richTextBoxConsole.Selection.Start.CompareTo(inputStartPos) < 0;
-
-            //  If we're at the input point and it's backspace, bail.
-            if (e.Key == Key.Back)
+            if (IsProcessRunning)
             {
-                if (inReadOnlyZone || inputTextBuilder.Length == 0)
-                    e.Handled = true;
-                else
-                    inputTextBuilder.Remove(inputTextBuilder.Length - 1, 1);
-            }
+                bool inReadOnlyZone = richTextBoxConsole.Selection.Start.CompareTo(inputStartPos) < 0;
 
-            //  Are we in the read-only zone?
-            if (inReadOnlyZone)
-            {
-                //  Allow arrows and Ctrl-C.
-                if (!(e.Key == Key.Left ||
-                    e.Key == Key.Right ||
-                    e.Key == Key.Up ||
-                    e.Key == Key.Down ||
-                    (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))))
+                //  If we're at the input point and it's backspace, bail.
+                if (e.Key == Key.Back)
                 {
-                    e.Handled = true;
+                    if (inReadOnlyZone || inputTextBuilder.Length == 0)
+                        e.Handled = true;
+                    else
+                        inputTextBuilder.Remove(inputTextBuilder.Length - 1, 1);
                 }
+
+                //  Are we in the read-only zone?
+                if (inReadOnlyZone)
+                {
+                    //  Allow arrows and Ctrl-C.
+                    if (!(e.Key == Key.Left ||
+                        e.Key == Key.Right ||
+                        e.Key == Key.Up ||
+                        e.Key == Key.Down ||
+                        (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))))
+                    {
+                        e.Handled = true;
+                    }
+                }
+
+                //  Is it the return key?
+                if (e.Key == Key.Return)
+                {
+                    //  Get the input.
+                    var input = inputTextBuilder.ToString();
+
+                    //  Write the input (without echoing).
+                    WriteInput(input, Colors.White, false);
+                    inputTextBuilder.Clear();
+                }
+
+                if (e.Key == Key.Space)
+                    inputTextBuilder.Append(' ');
             }
-
-            //  Is it the return key?
-            if (e.Key == Key.Return)
-            {
-                //  Get the input.
-                var input = inputTextBuilder.ToString();
-
-                //  Write the input (without echoing).
-                WriteInput(input, Colors.White, false);
-                inputTextBuilder.Clear();
-            }
-
-            if (e.Key == Key.Space)
-                inputTextBuilder.Append(' ');
         }
 
         /// <summary>
